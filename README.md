@@ -1,11 +1,9 @@
 # Instagram Like Bot
 
-----
 ## Description
 Short program written in **Python** that likes post of users you **follow**.
 It uses **Selenium** and **PhantomJS** headless WebKit to crawl links of users you follow and **requests** library to like posts using few *hacks* that allow to *GET* user and posts data in json and *POST* data without a use of *official* **Instagram API**.
 
-----
 ## Before you start
 Consider to use **Python** libraries that have more functionality:
 
@@ -15,13 +13,13 @@ Consider to use **Python** libraries that have more functionality:
 
 
 ###### Not to get banned make sure bot doesn't like more than 1000 posts per day
-----
+
 ## Installation
 
 - You need **Python 3** to be installed
 - Tested on OSX and Debian
 ---
-1. Install the dependencies with [pip] (https://pypi.python.org/pypi/pip)
+1. Install the dependencies with [pip](https://pypi.python.org/pypi/pip)
 ```bash
 $ pip install-r requirements.txt
 ```
@@ -31,14 +29,14 @@ $ pip install-r requirements.txt
 ```bash
 $ git clone https://github.com/sehlat57/instalike_bot
 ```
-----
 ## Usage
 1. Navigate to the directory with ```cd```
 ```bash
 $ cd instalikes_bot
 ```
 2. Run the bot with 
-```bash $ python3 instabot.py -l ACCOUNT_NAME -p PASSWORD
+```bash 
+$ python3 instabot.py -l ACCOUNT_NAME -p PASSWORD
 ```
 
 ##### Optional command line arguments:
@@ -53,18 +51,14 @@ $ cd instalikes_bot
 $ python3 instabot.py -l ACCOUNT_NAME -p PASSWORD -n 5 --ignore_limit
 ```
 ----
+
 You can add users which posts you **don't want to like**. Just add them to ```ignore_list.txt``` file in the directory.
 
 ----
-
-##### Don't forget to check log file for detailed information about bot activity, errors and other information.
-
-----
+#### Don't forget to check log file for detailed information about bot activity, errors and other information.
 
 ## # ToDo
 
 - [ ] Write tests
-
-----
 
 ### Thanks for using
