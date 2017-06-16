@@ -1,4 +1,9 @@
 # Instagram Like Bot
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/efa2f06951dc44ce9eeed7a056d758ec)](https://www.codacy.com/app/sehlat57/instalike_bot?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=sehlat57/instalike_bot&amp;utm_campaign=Badge_Grade)
+[![Python3](https://img.shields.io/badge/python-3.4%2C%203.5%2C%203%2C6-blue.svg)](https://www.python.org/)
+[![Selenium](https://img.shields.io/badge/Selenium-3.4.2-brightgreen.svg)](http://www.seleniumhq.org/)
+[![requests](https://img.shields.io/badge/requests-2.14.2-yellowgreen.svg)](http://docs.python-requests.org/en/master/)
+
 
 ## Description
 Short program written in **Python** that likes post of users you **follow**.
