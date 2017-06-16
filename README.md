@@ -32,7 +32,7 @@ $ git clone https://github.com/sehlat57/instalike_bot
 ## Usage
 1. Navigate to the directory with ```cd```
 ```bash
-$ cd instalikes_bot
+$ cd instalike_bot
 ```
 2. Run the bot with 
 ```bash 
