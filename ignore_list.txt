@@ -1,0 +1,6 @@
+Pass instagram usernames  you don't want bot to like after "Ignore list" and
+separate them with comma.
+See below several instagram accounts as an example (delete them and add yours)
+
+Ignore list:
+natgeo, therock, espn

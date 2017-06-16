@@ -1,0 +1,19 @@
+version: 1
+formatters:
+  simple:
+    format: '%(asctime)s - %(levelname)s - %(message)s'
+handlers:
+  insta_log:
+    class: logging.handlers.RotatingFileHandler
+    level: DEBUG
+    formatter: simple
+    filename: !!python/object/apply:insta_logging.insta_logging.save_to_path []
+    mode: a
+loggers:
+  insta_logger:
+    level: DEBUG
+    handlers: [insta_log, ]
+    propagate: no
+root:
+  level: DEBUG
+  handlers: [insta_log, ]
