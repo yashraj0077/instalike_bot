@@ -198,6 +198,7 @@ class InstApi(object):
             if post_like.status_code == 200:
                 insta_logger.info('User {} post code #{} was liked'.format(
                     username, media_code))
+                return 1
             else:
                 insta_logger.error('Failed to like user {} post code #{},'
                                    'status code: {}'.format(username,
@@ -248,6 +249,8 @@ class LikingBot(object):
         self.followings = followings
         self.posts_to_like = dict()
         self.total_likes = read_today_likes()
+        self.failed_to_like = 0
+        self.liked = 0
 
     @staticmethod
     def calc_num_of_posts(posts):
@@ -344,11 +347,29 @@ class LikingBot(object):
         for user, posts in self.posts_to_like.items():
             for post in posts:
                 self.check_likes_limit()
-                self.public_api.like_media(media_id=post[1],
+                like_post = self.public_api.like_media(media_id=post[1],
                                            media_code=post[0],
                                            username=user)
+                if like_post:
+                    self.liked += 1
+                    self.total_likes += 1
+                else:
+                    self.failed_to_like += 1
+                    print('\n')
+                    print('\n oops, something is wrong,'
+                          'login again after 2 minutes\n'
+                          'please wait')
+                    self.public_api.logout()
+                    time.sleep(60 * 2)
+                    insta_logger.info('Relogin attempt')
+                    self.public_api.login()
+                    print('Trying to like again')
                 completion += 1
-                self.total_likes += 1
                 progress_bar(completion=completion, total=total_posts,
                              start_time=start_time)
+                time.sleep(1)
+        print('--Successfully liked: {}'.format(self.liked))
+        insta_logger.info('Successfully liked: {}'.format(self.liked))
+        print('--Failed to like: {}'.format(self.failed_to_like))
+        insta_logger.info('Failed to like: {}'.format(self.failed_to_like))
         write_today_likes(self.total_likes)
