@@ -1,7 +1,7 @@
 import os
 import sys
+import getpass
 from time import time
-from datetime import date
 import argparse
 import textwrap
 import json
@@ -37,6 +37,14 @@ def load_ignore_list():
     print('No ignore list found')
     insta_logger.error('No ignore list found')
     return []
+
+
+class PassAction(argparse.Action):
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        if values is None:
+            values = getpass.getpass()
+        setattr(namespace, self.dest, values)
 
 
 def parse_credentials():
@@ -77,13 +85,16 @@ def parse_credentials():
                           required=True,
                           help='\nInstagram account name')
     required.add_argument('-p', '--password',
-                          required=True,
-                          help='\nInstagram password')
+                          action=PassAction,
+                          nargs='?',
+                          dest='password',
+                          help='\nInstagram password',
+                          required=True)
     required.add_argument('-n', '--number_of_posts',
                           type=int,
                           default=12,
                           help='\nNumber of posts to check for user likes, '
-                               'default value is 12')
+                               'default value is 12',)
     required.add_argument('--ignore_limit',
                           action='store_true',
                           default=False,
