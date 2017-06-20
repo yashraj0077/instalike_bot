@@ -3,8 +3,8 @@
 [![Python3](https://img.shields.io/badge/python-3.4%2C%203.5%2C%203%2C6-blue.svg)](https://www.python.org/)
 [![Selenium](https://img.shields.io/badge/Selenium-3.4.2-brightgreen.svg)](http://www.seleniumhq.org/)
 [![requests](https://img.shields.io/badge/requests-2.14.2-yellowgreen.svg)](http://docs.python-requests.org/en/master/)
-
-
+## Demo:
+![](https://github.com/sehlat57/instalike_bot/blob/master/bot.gif)
 ## Description
 Short program written in **Python** that likes post of users you **follow**.
 It uses **Selenium** and **PhantomJS** headless WebKit to crawl links of users you follow and **requests** library to like posts using few *hacks* that allow to *GET* user and posts data in json and *POST* data without a use of *official* **Instagram API**.
