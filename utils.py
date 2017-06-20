@@ -140,10 +140,10 @@ def progress_bar(completion, total, start_time, width=20):
         sys.stdout.write('\n')
 
 
-def write_today_likes(total_likes):
+def write_likes(total_likes):
     """
-    Write number of today likes made by bot to file in json:
-     {"date": "total likes"}
+    Write number of likes made by bot and current time stamp to json file:
+     {"total_likes": "total likes", "timestamp": "timestamp"}
     :param total_likes: number of likes
     :return:
     """
@@ -153,27 +153,39 @@ def write_today_likes(total_likes):
         try:
             likes = json.load(likes_file)
         except io.UnsupportedOperation:
-            likes = dict()
-        likes[str(date.today())] = total_likes
+            likes = {'total_likes': total_likes, 'timestamp': time()}
+        likes['total_likes'] = total_likes
+        likes['timestamp'] = time()
         json.dump(likes, likes_file)
         insta_logger.info('Likes made by bot is writen to file, '
-                          'total posts liked today: {}'.format(total_likes))
+                          'total posts liked: {}'.format(total_likes))
 
 
-def read_today_likes():
+def check_today_likes(previous_timestamp):
     """
-    Read number of likes made by bot from json file
-    :return: number of likes made by bot today, 0 if today date not found
+    Read number of likes made by bot from json file,
+    reset total_likes if bot didn't like posts in 24 hours
+    :return: number of likes made by bot in 24 hours, 0 if bot didn't like
+    posts in 24 hours
     """
     dir_name = os.path.dirname(os.path.abspath(__file__))
     file_path = os.path.join(dir_name, 'likes_count.json')
     if os.path.exists(file_path):
-        with open(file_path) as likes_file:
+        with open(file_path, 'r+') as likes_file:
             try:
                 likes = json.load(likes_file)
-                likes_today = likes.get(str(date.today()))
+                likes_today = likes.get('total_likes')
+                previous_timestamp = previous_timestamp
+                time_passed = time() - previous_timestamp
                 if likes_today:
-                    return likes_today
+                    if time_passed <= 24 * 60 * 60:
+                        return likes_today
+                    likes['timestamp'] = time()
+                    likes['total_likes'] = 0
+                    likes_file.seek(0)
+                    likes_file.truncate()
+                    json.dump(likes, likes_file)
+                    return 0
                 return 0
             except io.UnsupportedOperation:
                 return 0

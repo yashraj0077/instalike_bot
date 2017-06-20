@@ -6,7 +6,7 @@ import random
 from urllib.parse import urljoin, urlparse
 
 from insta_logging.insta_logging import insta_logger
-from utils import progress_bar, read_today_likes, write_today_likes
+from utils import progress_bar, check_today_likes, write_likes
 
 __author__ = 'sehlat57'
 
@@ -248,9 +248,11 @@ class LikingBot(object):
         self.ignore_limit = ignore_limit
         self.followings = followings
         self.posts_to_like = dict()
-        self.total_likes = read_today_likes()
-        self.failed_to_like = 0
-        self.liked = 0
+        self.timestamp = time.time()
+        self.total_likes = check_today_likes(self.timestamp)
+        self.like_errors = 0
+        self.like_error_limit = 3
+        self.like_error_posts = dict()
 
     @staticmethod
     def calc_num_of_posts(posts):
@@ -261,21 +263,25 @@ class LikingBot(object):
         """
         return sum([len(post) for post in posts.values() if post])
 
-    def check_likes_limit(self):
+    def check_likes_limit(self, write_timestamp=True):
         """
-        Checks if likes made today by bot not exceeds limit (1000 likes)
+        Checks if likes made by bot not exceeds limit (1000 likes)
         If likes made today equal limit - exit program.
         :return:
         """
         if not self.ignore_limit:
             if self.total_likes >= 1000:
-                insta_logger.critical('Bot liked 1000 posts today,'
+                insta_logger.critical('Bot liked 1000 posts in recent '
+                                      '24 hours,'
                                       'stopping bot to avoid ban')
-                write_today_likes(self.total_likes)
+                if write_timestamp:
+                    write_likes(self.total_likes)
                 insta_logger.info(
                     '--------------STOP---------------')
-                print('Bot liked 1000 posts today, stopping bot to avoid ban')
-                self.public_api.logout()
+                print('Bot liked 1000 posts in recent 24 hours, '
+                      'stopping bot to avoid ban')
+                if self.public_api.logged_in:
+                    self.public_api.logout()
                 sys.exit()
 
     def populate_post_list(self):
@@ -344,32 +350,85 @@ class LikingBot(object):
         print('--Total posts to like: {}'.format(total_posts))
         start_time = current_time()
         completion = 0
+        liked = 0
         for user, posts in self.posts_to_like.items():
             for post in posts:
                 self.check_likes_limit()
                 like_post = self.public_api.like_media(media_id=post[1],
-                                           media_code=post[0],
-                                           username=user)
+                                                       media_code=post[0],
+                                                       username=user)
                 if like_post:
-                    self.liked += 1
+                    liked += 1
                     self.total_likes += 1
                 else:
-                    self.failed_to_like += 1
-                    print('\n')
-                    print('\n oops, something is wrong,'
-                          'login again after 2 minutes\n'
-                          'please wait')
-                    self.public_api.logout()
-                    time.sleep(60 * 2)
-                    insta_logger.info('Relogin attempt')
-                    self.public_api.login()
-                    print('Trying to like again')
+                    self.like_errors += 1
+                    self.like_error_posts.setdefault(user, set()).add(post)
+                    if self.like_errors == self.like_error_limit:
+                        self.like_errors = 0
+                        print('\n')
+                        print('\n oops, something is wrong,'
+                              'login again after 5 minutes\n'
+                              'please wait')
+                        self.public_api.logout()
+                        time.sleep(60 * 5)
+                        insta_logger.info('Relogin attempt')
+                        self.public_api.login()
+                        print('Resume liking')
                 completion += 1
                 progress_bar(completion=completion, total=total_posts,
                              start_time=start_time)
-                time.sleep(1)
-        print('--Successfully liked: {}'.format(self.liked))
-        insta_logger.info('Successfully liked: {}'.format(self.liked))
-        print('--Failed to like: {}'.format(self.failed_to_like))
-        insta_logger.info('Failed to like: {}'.format(self.failed_to_like))
-        write_today_likes(self.total_likes)
+                time.sleep(1 * random.random())
+        session_failed = self.calc_num_of_posts(self.like_error_posts)
+        print('--Successfully liked in session: {}'.format(liked))
+        insta_logger.info('Successfully liked in session: {}'.format(
+            liked))
+        print('--Failed to like in session: {}'.format(session_failed))
+        insta_logger.info('Failed to like in '
+                          'session: {}'.format(session_failed))
+        write_likes(self.total_likes)
+
+    def reliking_failed_posts(self):
+        """
+        Liking posts, that 'bot' failed to like during first session
+        :return:
+        """
+        total_posts_to_relike = self.calc_num_of_posts(self.like_error_posts)
+        if total_posts_to_relike != 0:
+            print('-Logout and sleep for 2 minutes before "reliking" session')
+            insta_logger.info('Logout and sleep for 2 minutes before'
+                              ' "reliking" session')
+            self.public_api.logout()
+            time.sleep(2 * 60)
+            print('-Trying to relogin to relike "failed posts"')
+            insta_logger.info('Relogin to like "failed posts"')
+            self.public_api.login()
+            start_time = current_time()
+            completion = 0
+            liked = 0
+            failed_to_like = 0
+            for user, posts in self.like_error_posts.items():
+                for post in posts:
+                    self.check_likes_limit()
+                    like_post = self.public_api.like_media(media_id=post[1],
+                                                           media_code=post[0],
+                                                           username=user)
+                    if like_post:
+                        liked += 1
+                        self.total_likes += 1
+                    else:
+                        failed_to_like += 1
+                completion += 1
+                progress_bar(completion=completion,
+                             total=total_posts_to_relike,
+                             start_time=start_time)
+                time.sleep(1 * random.random())
+            print('--Successfully liked in relike session: {}'.format(
+                liked))
+            insta_logger.info(
+                'Successfully liked in relike session: {}'.format(
+                    liked))
+            print('--Failed to like in relike session: {}'.format(
+                failed_to_like))
+            insta_logger.info('Failed to like in relike session: {}'.format(
+                failed_to_like))
+            write_likes(self.total_likes)

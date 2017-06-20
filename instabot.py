@@ -23,6 +23,12 @@ def main():
         print('instabot is working:')
         draw_worker_text('populating ignore list')
         ignore_list = load_ignore_list()
+        bot = LikingBot(user_login=login, user_password=password,
+                        ignore_list=ignore_list, followings=None,
+                        posts_to_check=posts_to_check,
+                        ignore_limit=ignore_limit)
+        # Check if likes limit not exceeds
+        bot.check_likes_limit(write_timestamp=False)
         draw_line_separator()
         draw_worker_text('getting list of followings')
         print('#This could take a while, be patient#')
@@ -35,20 +41,18 @@ def main():
         web_driver.crawl_folowing_links()
         followings_list = web_driver.followings_list
         web_driver.close()
-
         # Public api part using requests library:
+        bot.followings = followings_list
         draw_line_separator()
         draw_worker_text('Liking posts')
-        bot = LikingBot(user_login=login, user_password=password,
-                        ignore_list=ignore_list, followings=followings_list,
-                        posts_to_check=posts_to_check,
-                        ignore_limit=ignore_limit)
         # Login with 'requests' to use instagram public api
         bot.public_api.login()
         bot.populate_post_list()  # Populating users media data
         # Excluding posts that have already been liked
         bot.excluding_liked_posts()
         bot.liking_all_posts()  # Liking all remaining posts
+        if bot.calc_num_of_posts(bot.like_error_posts) != 0:
+            bot.reliking_failed_posts()
         draw_worker_text('Work is done, bot is tired and shutting down.')
         draw_worker_text('For more info refer to today log file')
         insta_logger.info('End of the program. Shutting down')
@@ -69,3 +73,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
