@@ -417,11 +417,11 @@ class LikingBot(object):
                         self.total_likes += 1
                     else:
                         failed_to_like += 1
-                completion += 1
-                progress_bar(completion=completion,
+                    completion += 1
+                    progress_bar(completion=completion,
                              total=total_posts_to_relike,
                              start_time=start_time)
-                time.sleep(1 * random.random())
+                    time.sleep(1 * random.random())
             print('--Successfully liked in relike session: {}'.format(
                 liked))
             insta_logger.info(
